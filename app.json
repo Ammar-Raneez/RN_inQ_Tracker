@@ -1,0 +1,12 @@
+{
+  "name": "IncomeTracker",
+  "displayName": "IncomeTracker",
+  "expo": {
+    "name": "IncomeTracker",
+    "slug": "IncomeTracker",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  }
+}
