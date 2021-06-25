@@ -24,19 +24,24 @@ const App = () => {
 
 	const [data, setData] = useState([
 		{
-			[moment()]: 2000
+			date: moment(), 
+			amount: 2000
 		},
 		{
-			[moment().subtract(1, 'days')]: 2500
+			date: moment().subtract(1, 'days'),
+			amount: 2500
 		},
 		{
-			[moment().subtract(2, 'days')]: 3500
+			date: moment().subtract(2, 'days'),
+			amount: 3500
 		},
 		{
-			[moment().subtract(3, 'days')]: 4500
+			date: moment().subtract(3, 'days'),
+			amount: 4500
 		},
 		{
-			[moment().subtract(4, 'days')]: 5500
+			date: moment().subtract(4, 'days'),
+			amount: 5500
 		}
 	]);
 
@@ -44,8 +49,8 @@ const App = () => {
 		setTotal(gigs.reduce((total, gig) => total + Number(gig.amount), 0));
 	}, [gigs])
 
-	const getDates = () => data.map(pair => Object.keys(pair)[0]);
-	const getAmounts = () => data.map(pair => Object.values(pair)[0]);
+	const getDates = () => data.map(pair => pair.date);
+	const getAmounts = () => data.map(pair => pair.amount);
 
 	const addGig = () => {
 		setGigs([...gigs, {
