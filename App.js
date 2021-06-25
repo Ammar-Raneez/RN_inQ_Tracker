@@ -3,13 +3,12 @@ import React from 'react'
 import { Button, Dimensions, SafeAreaView, StyleSheet, Text, View } from 'react-native'
 import { TextInput } from 'react-native-gesture-handler';
 import { LineChart } from 'react-native-chart-kit'
+import moment from 'moment'
 
 const App = () => {
 	const [description, setDescription] = useState("");
 	const [amount, setAmount] = useState("");
 	const [total, setTotal] = useState("");
-	const [labels, setLabes] = useState([]);
-	const [dataPoints, setDataPoints] = useState([]);
 	const [gigs, setGigs] = useState([
 		{
 			description: 'Freelance job',
@@ -23,9 +22,30 @@ const App = () => {
 		},
 	]);
 
+	const [data, setData] = useState([
+		{
+			[moment()]: 2000
+		},
+		{
+			[moment().subtract(1, 'days')]: 2500
+		},
+		{
+			[moment().subtract(2, 'days')]: 3500
+		},
+		{
+			[moment().subtract(3, 'days')]: 4500
+		},
+		{
+			[moment().subtract(4, 'days')]: 5500
+		}
+	]);
+
 	useEffect(() => {
 		setTotal(gigs.reduce((total, gig) => total + Number(gig.amount), 0));
 	}, [gigs])
+
+	const getDates = () => data.map(pair => Object.keys(pair)[0]);
+	const getAmounts = () => data.map(pair => Object.values(pair)[0]);
 
 	const addGig = () => {
 		setGigs([...gigs, {
@@ -42,21 +62,10 @@ const App = () => {
 		<SafeAreaView>
 			<LineChart 
 				data={{
-					labels: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+					labels: getDates(),
 					datasets: [
 						{
-							data: [
-								gigs[0].amount,
-								gigs[1].amount,
-								gigs[0].amount,
-								gigs[1].amount,
-								gigs[0].amount,
-								gigs[1].amount,
-								gigs[0].amount,
-								gigs[1].amount,
-								gigs[0].amount,
-								gigs[1].amount,
-							]
+							data: getAmounts()
 						}
 					]
 				}}
