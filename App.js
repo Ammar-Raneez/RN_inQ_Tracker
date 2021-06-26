@@ -24,37 +24,43 @@ const App = () => {
 
 	const [data, setData] = useState([
 		{
-			date: moment(), 
+			date: moment().format('LL'), 
 			amount: 2000
 		},
 		{
-			date: moment().subtract(1, 'days'),
+			date: moment().subtract(1, 'days').format('LL'),
 			amount: 2500
 		},
 		{
-			date: moment().subtract(1, 'days'),
+			date: moment().subtract(1, 'days').format('LL'),
 			amount: 2550
 		},
 		{
-			date: moment().subtract(2, 'days'),
+			date: moment().subtract(2, 'days').format('LL'),
 			amount: 3500
 		},
 		{
-			date: moment().subtract(3, 'days'),
+			date: moment().subtract(3, 'days').format('LL'),
 			amount: 4500
 		},
 		{
-			date: moment().subtract(4, 'days'),
+			date: moment().subtract(4, 'days').format('LL'),
 			amount: 5500
 		}
 	]);
+
+	const [transformedData, setTranformedData] = useState([]);
 
 	useEffect(() => {
 		setTotal(gigs.reduce((total, gig) => total + Number(gig.amount), 0));
 	}, [gigs])
 
-	const getDates = () => data.map(pair => pair.date);
-	const getAmounts = () => data.map(pair => pair.amount);
+	useEffect(() => {
+		setTranformedData(transformData(groupBy(data, 'date')))
+	}, [data])
+
+	const getDates = () => transformedData.map(pair => pair.date);
+	const getAmounts = () => transformedData.map(pair => pair.amount);
 
 	const addGig = () => {
 		setGigs([...gigs, {
@@ -84,7 +90,9 @@ const App = () => {
 			})
 		})
 
-		return transformedArray;
+		const sortedArray = transformedArray.sort((a, b) => moment(a['date']).diff(moment(b['date'])))
+
+		return sortedArray;
 	}
 
 	console.log("The Dates: ", getDates());
