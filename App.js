@@ -32,6 +32,10 @@ const App = () => {
 			amount: 2500
 		},
 		{
+			date: moment().subtract(1, 'days'),
+			amount: 2550
+		},
+		{
 			date: moment().subtract(2, 'days'),
 			amount: 3500
 		},
@@ -62,6 +66,31 @@ const App = () => {
 		setDescription("")
 		setAmount("")
 	}
+
+	const groupBy = (array, key) =>
+		array.reduce((rv, x) => {
+			(rv[x[key]] = rv[x[key]] || []).push(x);
+			return rv;
+		}, {})
+
+	const transformData = groupedData => {
+		const transformedArray = [];
+
+		Object.entries(groupedData).forEach(entry => {
+			const total = entry[1].reduce((total, pair) => total + pair.amount, 0)
+			transformedArray.push({
+				date: entry[0],
+				amount: total
+			})
+		})
+
+		return transformedArray;
+	}
+
+	console.log("The Dates: ", getDates());
+	console.log("The Amounts: ", getAmounts());
+	console.log("Grouped values: ", Object.entries(groupBy(data, 'date')))
+	console.log("Total grouped value:", transformData(groupBy(data, 'date')))
 
 	return (
 		<SafeAreaView>
