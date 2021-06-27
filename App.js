@@ -66,8 +66,15 @@ const App = () => {
 		setGigs([...gigs, {
 			description,
 			amount,
-			timestamp: new Date()
 		}]);
+
+		setData([
+			...data,
+			{
+				date: moment().format('LL'),
+				amount: Number(amount)
+			}
+		])
 
 		setDescription("")
 		setAmount("")
@@ -85,7 +92,7 @@ const App = () => {
 		Object.entries(groupedData).forEach(entry => {
 			const total = entry[1].reduce((total, pair) => total + pair.amount, 0)
 			transformedArray.push({
-				date: entry[0],
+				date: moment(entry[0]).format('YYYY-MM-DD'),
 				amount: total
 			})
 		})
@@ -113,13 +120,13 @@ const App = () => {
 				}}
 				width={Dimensions.get("window").width}
 				height={220}
-				yAxisLabel="Rs."
+				yAxisLabel="Rs. "
 				yAxisInterval={1}
 				chartConfig={{
 					backgroundColor: "#e26a00",
 					backgroundGradientFrom: "green",
 					backgroundGradientTo: "blue",
-					decimalPlaces: 2,
+					decimalPlaces: null,
 					color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
 					labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
 					style: {
@@ -169,8 +176,7 @@ export default App
 
 const styles = StyleSheet.create({
 	input: {
-		margin: 20,
-		padding: 20,
+		marginTop: 20,
 		height: 40,
 		borderColor: 'red',
 		borderWidth: 1
