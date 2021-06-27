@@ -5,7 +5,7 @@ import { TextInput } from 'react-native-gesture-handler';
 import { LineChart } from 'react-native-chart-kit'
 import moment from 'moment'
 
-const HomePage = () => {
+const HomePage = ({ navigation }) => {
 	const [description, setDescription] = useState("");
 	const [amount, setAmount] = useState("");
 	const [total, setTotal] = useState("");
@@ -104,6 +104,7 @@ const HomePage = () => {
 
 	return (
 		<SafeAreaView>
+            <Button title="Login" onPress={() => navigation.navigate("Login")} />
 			<LineChart 
 				data={{
 					labels: getDates(),
