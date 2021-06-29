@@ -34,7 +34,7 @@ const Home = ({ navigation }) => {
 	}, [])
 
 	useLayoutEffect(() => {
-		const unsubscribe = db.collection('income-data').doc(auth.currentUser.displayName).collection('all-data').orderBy('date', 'desc')
+		const unsubscribe = db.collection('income').doc(auth.currentUser.displayName).collection('all-income').orderBy('date', 'desc')
 			.onSnapshot(snapshot => (
 				setData(
 					snapshot.docs.map(doc => ({
@@ -90,9 +90,9 @@ const Home = ({ navigation }) => {
 			}
 		])
 
-		await db.collection('income-data')
+		await db.collection('income')
 				.doc(auth.currentUser.displayName)
-				.collection('all-data')
+				.collection('all-income')
 				.add({
 					date: moment().format('LL'),
 					amount: Number(amount)
