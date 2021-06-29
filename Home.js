@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import React from 'react'
-import { Button, Dimensions, SafeAreaView, StyleSheet, Text, View } from 'react-native'
-import { TextInput } from 'react-native-gesture-handler';
+import { Dimensions, SafeAreaView, StyleSheet, Text, View } from 'react-native'
+import { Button, Input } from 'react-native-elements';
 import { LineChart } from 'react-native-chart-kit'
 import moment from 'moment'
 
-const HomePage = ({ navigation }) => {
+const Home = ({ navigation }) => {
 	const [description, setDescription] = useState("");
 	const [amount, setAmount] = useState("");
 	const [total, setTotal] = useState("");
@@ -142,14 +142,22 @@ const HomePage = ({ navigation }) => {
 			/>
 
 			<Text>Total Income: {total}</Text>
-			<TextInput 
-				style={styles.input}
+			<Input 
+				style={{
+					outline: 'none',
+					height: 40,
+					marginTop: 20
+				}}
 				value={description}
 				placeholder="Enter a description"
 				onChangeText={text => setDescription(text)}
 			/>
-			<TextInput 
-				style={styles.input}
+			<Input 
+				style={{
+					outline: 'none',
+					height: 40,
+					marginTop: 20
+				}}
 				value={amount}
 				keyboardType='numeric'
 				placeholder="Enter amount"
@@ -168,7 +176,7 @@ const HomePage = ({ navigation }) => {
 	)
 }
 
-export default HomePage
+export default Home
 
 const styles = StyleSheet.create({
 	input: {
