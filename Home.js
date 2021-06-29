@@ -1,68 +1,82 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useLayoutEffect } from 'react'
 import React from 'react'
-import { Dimensions, SafeAreaView, StyleSheet, Text, View } from 'react-native'
+import { Dimensions, SafeAreaView, StyleSheet, Text, View, TouchableOpacity } from 'react-native'
+import { Avatar } from 'react-native-elements/dist/avatar/Avatar';
 import { Button, Input } from 'react-native-elements';
 import { LineChart } from 'react-native-chart-kit'
 import moment from 'moment'
+import { auth, db } from './firebase'
+import { Keyboard } from 'react-native';
 
 const Home = ({ navigation }) => {
 	const [description, setDescription] = useState("");
 	const [amount, setAmount] = useState("");
 	const [total, setTotal] = useState("");
-	const [gigs, setGigs] = useState([
-		{
-			description: 'Freelance job',
-			amount: 500,
-			timestamp: new Date()
-		},
-		{
-			description: 'Freelance job',
-			amount: 700,
-			timestamp: new Date()
-		},
-	]);
-
-	const [data, setData] = useState([
-		{
-			date: moment().format('LL'), 
-			amount: 2000
-		},
-		{
-			date: moment().subtract(1, 'days').format('LL'),
-			amount: 2500
-		},
-		{
-			date: moment().subtract(1, 'days').format('LL'),
-			amount: 2550
-		},
-		{
-			date: moment().subtract(2, 'days').format('LL'),
-			amount: 3500
-		},
-		{
-			date: moment().subtract(3, 'days').format('LL'),
-			amount: 4500
-		},
-		{
-			date: moment().subtract(4, 'days').format('LL'),
-			amount: 5500
-		}
-	]);
-
+	const [gigs, setGigs] = useState([]);
+	const [data, setData] = useState([]);
 	const [transformedData, setTranformedData] = useState([]);
 
+	useLayoutEffect(() => {
+		navigation.setOptions({
+			headerLeft: () => (
+                <View style={{ marginLeft: 20 }}>
+                    <TouchableOpacity onPress={signOut} activeOpacity={0.5}>
+                        <Avatar
+                            rounded
+                            source={{
+                                uri: auth?.currentUser.photoURL
+                            }}
+                        />
+                    </TouchableOpacity>
+                </View>
+            ),
+		})
+	}, [])
+
+	useLayoutEffect(() => {
+		const unsubscribe = db.collection('income-data').doc(auth.currentUser.displayName).collection('all-data').orderBy('date', 'desc')
+			.onSnapshot(snapshot => (
+				setData(
+					snapshot.docs.map(doc => ({
+						date: doc.data().date,
+						amount: doc.data().amount,
+					}))
+				)
+			))
+
+		return unsubscribe;
+	}, [])
+
+	useLayoutEffect(() => {
+		const unsubscribe = db.collection('gigs').doc(auth.currentUser.displayName).collection('all-gigs').orderBy('date', 'desc')
+			.onSnapshot(snapshot => (
+				setGigs(
+					snapshot.docs.map(doc => ({
+						date: doc.data().date,
+						amount: doc.data().amount,
+						description: doc.data().description,
+					}))
+				)
+			))
+
+		return unsubscribe;
+	}, [])
+
 	useEffect(() => {
-		setTotal(gigs.reduce((total, gig) => total + Number(gig.amount), 0));
+		setTotal(gigs?.reduce((total, gig) => total + Number(gig.amount), 0));
 	}, [gigs])
 
 	useEffect(() => {
 		setTranformedData(transformData(groupBy(data, 'date')))
 	}, [data])
 
-	const getDates = () => transformedData.map(pair => pair.date);
-	const getAmounts = () => transformedData.map(pair => pair.amount);
+	const signOut = () => auth.signOut().then(() => navigation.replace("Login"))
+	const getDates = () => transformedData?.map(pair => pair.date);
+	const getAmounts = () => transformedData?.map(pair => pair.amount);
 
-	const addGig = () => {
+	const addGig = async () => {
+		Keyboard.dismiss;
+
 		setGigs([...gigs, {
 			description,
 			amount,
@@ -76,12 +90,32 @@ const Home = ({ navigation }) => {
 			}
 		])
 
+		await db.collection('income-data')
+				.doc(auth.currentUser.displayName)
+				.collection('all-data')
+				.add({
+					date: moment().format('LL'),
+					amount: Number(amount)
+				})
+				.catch(error => alert(error.message))
+
+		await db.collection('gigs')
+				.doc(auth.currentUser.displayName)
+				.collection('all-gigs')
+				.add({
+					description,
+					amount: Number(amount),
+					date: moment().format('LL'),
+				})
+				.catch(error => alert(error.message))
+
 		setDescription("")
 		setAmount("")
 	}
 
+	// stack overflow group by function
 	const groupBy = (array, key) =>
-		array.reduce((rv, x) => {
+		array.length != 0 && array.reduce((rv, x) => {
 			(rv[x[key]] = rv[x[key]] || []).push(x);
 			return rv;
 		}, {})
@@ -92,7 +126,7 @@ const Home = ({ navigation }) => {
 		Object.entries(groupedData).forEach(entry => {
 			const total = entry[1].reduce((total, pair) => total + pair.amount, 0)
 			transformedArray.push({
-				date: moment(entry[0]).format('YYYY-MM-DD'),
+				date: moment(entry[0]).format('MM/DD'),
 				amount: total
 			})
 		})
@@ -104,42 +138,43 @@ const Home = ({ navigation }) => {
 
 	return (
 		<SafeAreaView>
-            <Button title="Login" onPress={() => navigation.navigate("Login")} />
-			<LineChart 
-				data={{
-					labels: getDates(),
-					datasets: [
-						{
-							data: getAmounts()
+			{data.length != 0 && 
+				<LineChart 
+					data={{
+						labels: getDates(),
+						datasets: [
+							{
+								data: getAmounts()
+							}
+						]
+					}}
+					width={Dimensions.get("window").width}
+					height={220}
+					yAxisLabel="Rs. "
+					yAxisInterval={1}
+					chartConfig={{
+						backgroundColor: "#e26a00",
+						backgroundGradientFrom: "green",
+						backgroundGradientTo: "blue",
+						decimalPlaces: null,
+						color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+						labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+						style: {
+							borderRadius: 16
+						},
+						propsForDots: {
+							r: "6",
+							strokeWidth: "2",
+							stroke: "#ffa726"
 						}
-					]
-				}}
-				width={Dimensions.get("window").width}
-				height={220}
-				yAxisLabel="Rs. "
-				yAxisInterval={1}
-				chartConfig={{
-					backgroundColor: "#e26a00",
-					backgroundGradientFrom: "green",
-					backgroundGradientTo: "blue",
-					decimalPlaces: null,
-					color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-					labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-					style: {
+					}}
+					bezier
+					style={{
+						marginVertical: 8,
 						borderRadius: 16
-					},
-					propsForDots: {
-						r: "6",
-						strokeWidth: "2",
-						stroke: "#ffa726"
-					}
-				}}
-				bezier
-				style={{
-					marginVertical: 8,
-					borderRadius: 16
-				}}
-			/>
+					}}
+				/>
+			}
 
 			<Text>Total Income: {total}</Text>
 			<Input 
@@ -162,6 +197,7 @@ const Home = ({ navigation }) => {
 				keyboardType='numeric'
 				placeholder="Enter amount"
 				onChangeText={text => setAmount(text)}
+				onSubmitEditing={addGig}
 			/>
 			{
 				gigs.map(gig => (
