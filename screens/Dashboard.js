@@ -7,6 +7,7 @@ import { LineChart } from 'react-native-chart-kit'
 import moment from 'moment'
 import { auth, db } from '../firebase'
 import { Keyboard } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
 
 const Dashboard = ({ navigation }) => {
 	const [description, setDescription] = useState("");
@@ -31,6 +32,13 @@ const Dashboard = ({ navigation }) => {
                     </TouchableOpacity>
                 </View>
             ),
+			headerRight: () => (
+				<View style={{ marginRight: 20 }}>
+					<TouchableOpacity onPress={() => navigation.navigate("Gigs")} activeOpacity={0.5}>
+						<MaterialIcons name="work-outline" size={24} color="white" />
+					</TouchableOpacity>
+				</View>
+			)
 		})
 	}, [])
 
@@ -156,8 +164,8 @@ const Dashboard = ({ navigation }) => {
 	}
 
 	return (
-		<SafeAreaView>
-			<View style={{ padding: 16, backgroundColor: '#282828' }}>
+		<SafeAreaView style={{ backgroundColor: '#282828', flex: 1 }}>
+			<View style={{ padding: 16 }}>
 				{data.length != 0 &&
 					<View style={styles.chartContainer}>
 						<LineChart 
@@ -205,14 +213,6 @@ const Dashboard = ({ navigation }) => {
 				<View style={styles.averageIncomeContainer}>
 					<Text h2 style={{ color: '#3594d4' }}>Today: {todayTotal}</Text>
 				</View>
-				{/* {
-					gigs.map(gig => (
-						<View>
-							<Text style={{ color: 'white' }}>{gig.description}</Text>
-							<Text style={{ color: 'white' }}>{gig.amount}</Text>
-						</View>
-					))
-				} */}
 
 				<Text h4 style={styles.newGigTitle}>ADD NEW GIG</Text>
 				<Input 
