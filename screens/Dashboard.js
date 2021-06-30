@@ -178,7 +178,7 @@ const Dashboard = ({ navigation }) => {
 								],
 								legend: ["Income Timeline"]
 							}}
-							width={Dimensions.get("window").width}
+							width={Dimensions.get("window").width > 1200 ? Dimensions.get("window").width - 50 : Dimensions.get("window").width }
 							height={300}
 							yAxisLabel="Rs. "
 							yAxisInterval={1}
