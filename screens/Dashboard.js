@@ -1,17 +1,18 @@
 import { useEffect, useState, useLayoutEffect } from 'react'
 import React from 'react'
-import { Dimensions, SafeAreaView, StyleSheet, Text, View, TouchableOpacity } from 'react-native'
+import { Dimensions, SafeAreaView, StyleSheet, View, TouchableOpacity } from 'react-native'
 import { Avatar } from 'react-native-elements/dist/avatar/Avatar';
-import { Button, Input } from 'react-native-elements';
+import { Button, Input, Text } from 'react-native-elements';
 import { LineChart } from 'react-native-chart-kit'
 import moment from 'moment'
-import { auth, db } from './firebase'
+import { auth, db } from '../firebase'
 import { Keyboard } from 'react-native';
 
-const Home = ({ navigation }) => {
+const Dashboard = ({ navigation }) => {
 	const [description, setDescription] = useState("");
 	const [amount, setAmount] = useState("");
 	const [total, setTotal] = useState("");
+	const [todayTotal, setTodayTotal] = useState(0);
 	const [gigs, setGigs] = useState([]);
 	const [data, setData] = useState([]);
 	const [transformedData, setTranformedData] = useState([]);
@@ -63,6 +64,10 @@ const Home = ({ navigation }) => {
 	}, [])
 
 	useEffect(() => {
+		transformedData?.map(pair => pair.date === todaysDate() && setTodayTotal(pair.amount))
+	}, [transformedData])
+
+	useEffect(() => {
 		setTotal(gigs?.reduce((total, gig) => total + Number(gig.amount), 0));
 	}, [gigs])
 
@@ -73,6 +78,20 @@ const Home = ({ navigation }) => {
 	const signOut = () => auth.signOut().then(() => navigation.replace("Login"))
 	const getDates = () => transformedData?.map(pair => pair.date);
 	const getAmounts = () => transformedData?.map(pair => pair.amount);
+
+	const todaysDate = () => {
+		var d = new Date(),
+			month = '' + (d.getMonth() + 1),
+			day = '' + d.getDate(),
+			year = d.getFullYear();
+	
+		if (month.length < 2) 
+			month = '0' + month;
+		if (day.length < 2) 
+			day = '0' + day;
+	
+		return [year, month, day].join('/');
+	}
 
 	const addGig = async () => {
 		Keyboard.dismiss;
@@ -126,7 +145,7 @@ const Home = ({ navigation }) => {
 		Object.entries(groupedData).forEach(entry => {
 			const total = entry[1].reduce((total, pair) => total + pair.amount, 0)
 			transformedArray.push({
-				date: moment(entry[0]).format('MM/DD'),
+				date: moment(entry[0]).format('YYYY/MM/DD'),
 				amount: total
 			})
 		})
@@ -138,87 +157,139 @@ const Home = ({ navigation }) => {
 
 	return (
 		<SafeAreaView>
-			{data.length != 0 && 
-				<LineChart 
-					data={{
-						labels: getDates(),
-						datasets: [
-							{
-								data: getAmounts()
-							}
-						]
-					}}
-					width={Dimensions.get("window").width}
-					height={220}
-					yAxisLabel="Rs. "
-					yAxisInterval={1}
-					chartConfig={{
-						backgroundColor: "#e26a00",
-						backgroundGradientFrom: "green",
-						backgroundGradientTo: "blue",
-						decimalPlaces: null,
-						color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-						labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-						style: {
-							borderRadius: 16
-						},
-						propsForDots: {
-							r: "6",
-							strokeWidth: "2",
-							stroke: "#ffa726"
-						}
-					}}
-					bezier
-					style={{
-						marginVertical: 8,
-						borderRadius: 16
-					}}
-				/>
-			}
-
-			<Text>Total Income: {total}</Text>
-			<Input 
-				style={{
-					outline: 'none',
-					height: 40,
-					marginTop: 20
-				}}
-				value={description}
-				placeholder="Enter a description"
-				onChangeText={text => setDescription(text)}
-			/>
-			<Input 
-				style={{
-					outline: 'none',
-					height: 40,
-					marginTop: 20
-				}}
-				value={amount}
-				keyboardType='numeric'
-				placeholder="Enter amount"
-				onChangeText={text => setAmount(text)}
-				onSubmitEditing={addGig}
-			/>
-			{
-				gigs.map(gig => (
-					<View>
-						<Text>{gig.description}</Text>
-						<Text>{gig.amount}</Text>
+			<View style={{ padding: 16, backgroundColor: '#282828' }}>
+				{data.length != 0 &&
+					<View style={styles.chartContainer}>
+						<LineChart 
+							data={{
+								labels: getDates(),
+								datasets: [
+									{
+										data: getAmounts()
+									}
+								],
+								legend: ["Income Timeline"]
+							}}
+							width={Dimensions.get("window").width}
+							height={300}
+							yAxisLabel="Rs. "
+							yAxisInterval={1}
+							chartConfig={{
+								backgroundColor: "#e26a00",
+								backgroundGradientFrom: "green",
+								backgroundGradientTo: "blue",
+								decimalPlaces: null,
+								color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+								labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+								style: {
+									borderRadius: 16,
+								},
+								propsForDots: {
+									r: "6",
+									strokeWidth: "2",
+									stroke: "#ffa726"
+								}
+							}}
+							bezier
+							style={{
+								marginVertical: 8,
+								borderRadius: 16,
+							}}
+						/>
 					</View>
-				))
-			}
-			<Button disabled={description == "" || amount == ""} title="Add GIG" onPress={addGig} />
+				}
+
+				<View style={styles.totalIncomeContainer}>
+					<Text h2 style={{ color: 'white' }}>Total: {total}</Text>
+				</View>
+				<View style={styles.averageIncomeContainer}>
+					<Text h2 style={{ color: '#3594d4' }}>Today: {todayTotal}</Text>
+				</View>
+				{/* {
+					gigs.map(gig => (
+						<View>
+							<Text style={{ color: 'white' }}>{gig.description}</Text>
+							<Text style={{ color: 'white' }}>{gig.amount}</Text>
+						</View>
+					))
+				} */}
+
+				<Text h4 style={styles.newGigTitle}>ADD NEW GIG</Text>
+				<Input 
+					style={styles.input}
+					value={description}
+					placeholder="Enter a description"
+					onChangeText={text => setDescription(text)}
+				/>
+				<Input 
+					style={styles.input}
+					value={amount}
+					keyboardType='numeric'
+					placeholder="Enter amount"
+					onChangeText={text => setAmount(text)}
+					onSubmitEditing={addGig}
+				/>
+
+				<View style={styles.btnContainer}>
+					<Button containerStyle={styles.button} disabled={description == "" || amount == ""} title="Add GIG" onPress={addGig} />
+				</View>
+			</View>
 		</SafeAreaView>
 	)
 }
 
-export default Home
+export default Dashboard
 
 const styles = StyleSheet.create({
 	input: {
-		marginTop: 20,
 		height: 40,
-		borderColor: 'red',
-		borderWidth: 1
+		marginTop: 20,
+		color: 'white'
+	},
+
+	chartContainer: {
+		position: 'relative',
+	},
+
+	totalIncomeContainer: {
+		display: 'flex',
+		alignItems: 'center',
+		borderWidth: 1,
+		borderColor: '#2ECC71',
+		borderRadius: 16,
+		backgroundColor: '#2ECC71',
+		paddingTop: 40,
+		paddingBottom: 40,
+	},
+
+	averageIncomeContainer: {
+		marginTop: 10,
+		display: 'flex',
+		alignItems: 'center',
+		borderColor: '#3594d4',
+		borderWidth: 1,
+		borderRadius: 16,
+		paddingTop: 40,
+		paddingBottom: 40,
+	},
+
+	btnContainer: {
+		alignItems: 'center',
+		width: '100%',
+		marginTop: 10
+	},
+
+	button: {
+		width: '50%'
+	},
+
+	newGigTitle: {
+		color: 'white', 
+		marginTop: 20, 
+		alignItems: 'center',
+		display: 'flex',
+		color: '#E74C3C',
+		fontWeight: 'bold',
+		marginLeft: 10
 	}
 })

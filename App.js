@@ -1,5 +1,5 @@
 import React from 'react'
-import Home from './Home'
+import Dashboard from './screens/Dashboard'
 import { NavigationContainer } from '@react-navigation/native'
 import { createStackNavigator } from '@react-navigation/stack'
 import Login from './screens/Login';
@@ -8,9 +8,9 @@ import Register from './screens/Register';
 const Stack = createStackNavigator();
 
 const globalScreenOptions = {
-	headerStyle: { backgroundColor: 'white' },
-	headerTitleStyle: { color: 'black' },
-	headerTintColor: 'black',
+	headerStyle: { backgroundColor: '#282828' },
+	headerTitleStyle: { color: 'white' },
+	headerTintColor: 'white',
 }
 
 const App = () => {
@@ -19,7 +19,7 @@ const App = () => {
 			<Stack.Navigator screenOptions={globalScreenOptions}>
 				<Stack.Screen name="Login" component={Login} />
 				<Stack.Screen name="Register" component={Register} />
-				<Stack.Screen name="Home" component={Home} />
+				<Stack.Screen name="Dashboard" component={Dashboard} />
 			</Stack.Navigator>
 		</NavigationContainer>
 	)

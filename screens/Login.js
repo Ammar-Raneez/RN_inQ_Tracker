@@ -19,7 +19,7 @@ const Login = ({ navigation }) => {
             if (authUser) {
                 // we dont put home to stack
                 // we then we can navigate back to login thru the top nav bar
-                navigation.replace("Home")
+                navigation.replace("Dashboard")
             }
         })
         
