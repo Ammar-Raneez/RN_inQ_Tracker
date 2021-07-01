@@ -50,7 +50,6 @@ const Login = ({ navigation }) => {
                     autofocus 
                     type="email"
                     value={email}
-                    style={{ outline: "none" }}
                     onChangeText={text => setEmail(text)}
                 />
                 <Input 
@@ -59,7 +58,6 @@ const Login = ({ navigation }) => {
                     type="password" 
                     secureTextEntry 
                     value={password}
-                    style={{ outline: "none" }}
                     onChangeText={text => setPassword(text)}
                     onSubmitEditing={signIn}
                 />

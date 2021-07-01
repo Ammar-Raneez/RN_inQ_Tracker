@@ -4,10 +4,10 @@ import { Dimensions, SafeAreaView, StyleSheet, View, TouchableOpacity } from 're
 import { Avatar } from 'react-native-elements/dist/avatar/Avatar';
 import { Button, Input, Text } from 'react-native-elements';
 import { LineChart } from 'react-native-chart-kit'
-import moment from 'moment'
 import { auth, db } from '../firebase'
 import { Keyboard } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { ScrollView } from 'react-native-gesture-handler';
 
 const Dashboard = ({ navigation }) => {
 	const [description, setDescription] = useState("");
@@ -112,7 +112,7 @@ const Dashboard = ({ navigation }) => {
 		setData([
 			...data,
 			{
-				date: moment().format('LL'),
+				date: todaysDate(),
 				amount: Number(amount)
 			}
 		])
@@ -121,8 +121,8 @@ const Dashboard = ({ navigation }) => {
 				.doc(auth.currentUser.displayName)
 				.collection('all-income')
 				.add({
-					date: moment().format('LL'),
-					amount: Number(amount)
+					date: todaysDate(),
+					amount: Number(amount),
 				})
 				.catch(error => alert(error.message))
 
@@ -132,7 +132,7 @@ const Dashboard = ({ navigation }) => {
 				.add({
 					description,
 					amount: Number(amount),
-					date: moment().format('LL'),
+					date: todaysDate(),
 				})
 				.catch(error => alert(error.message))
 
@@ -153,87 +153,87 @@ const Dashboard = ({ navigation }) => {
 		Object.entries(groupedData).forEach(entry => {
 			const total = entry[1].reduce((total, pair) => total + pair.amount, 0)
 			transformedArray.push({
-				date: moment(entry[0]).format('YYYY/MM/DD'),
+				date: entry[0],
 				amount: total
 			})
 		})
 
-		const sortedArray = transformedArray.sort((a, b) => moment(a['date']).diff(moment(b['date'])))
-
-		return sortedArray;
+		return transformedArray.sort((a, b) => new Date(a.date) - new Date(b.date))
 	}
 
 	return (
 		<SafeAreaView style={{ backgroundColor: '#282828', flex: 1 }}>
-			<View style={{ padding: 16 }}>
-				{data.length != 0 &&
-					<View style={styles.chartContainer}>
-						<LineChart 
-							data={{
-								labels: getDates(),
-								datasets: [
-									{
-										data: getAmounts()
+			<ScrollView>
+				<View style={{ padding: 16 }}>
+					{getDates().length != 0 &&
+						<View style={styles.chartContainer}>
+							<LineChart 
+								data={{
+									labels: getDates(),
+									datasets: [
+										{
+											data: getAmounts()
+										}
+									],
+									legend: ["Income Timeline"]
+								}}
+								width={Dimensions.get("window").width > 1200 ? Dimensions.get("window").width - 50 : Dimensions.get("window").width - 30 }
+								height={300}
+								yAxisLabel="Rs. "
+								yAxisInterval={1}
+								chartConfig={{
+									backgroundColor: "#e26a00",
+									backgroundGradientFrom: "green",
+									backgroundGradientTo: "blue",
+									decimalPlaces: null,
+									color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+									labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+									style: {
+										borderRadius: 16,
+									},
+									propsForDots: {
+										r: "6",
+										strokeWidth: "2",
+										stroke: "#ffa726"
 									}
-								],
-								legend: ["Income Timeline"]
-							}}
-							width={Dimensions.get("window").width > 1200 ? Dimensions.get("window").width - 50 : Dimensions.get("window").width }
-							height={300}
-							yAxisLabel="Rs. "
-							yAxisInterval={1}
-							chartConfig={{
-								backgroundColor: "#e26a00",
-								backgroundGradientFrom: "green",
-								backgroundGradientTo: "blue",
-								decimalPlaces: null,
-								color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-								labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-								style: {
+								}}
+								bezier
+								style={{
+									marginVertical: 8,
 									borderRadius: 16,
-								},
-								propsForDots: {
-									r: "6",
-									strokeWidth: "2",
-									stroke: "#ffa726"
-								}
-							}}
-							bezier
-							style={{
-								marginVertical: 8,
-								borderRadius: 16,
-							}}
-						/>
+								}}
+							/>
+						</View>
+					}
+
+					<View style={styles.totalIncomeContainer}>
+						<Text h2 style={{ color: 'white' }}>Total: {total}</Text>
 					</View>
-				}
+					<View style={styles.averageIncomeContainer}>
+						<Text h2 style={{ color: '#3594d4' }}>Today: {todayTotal}</Text>
+					</View>
 
-				<View style={styles.totalIncomeContainer}>
-					<Text h2 style={{ color: 'white' }}>Total: {total}</Text>
-				</View>
-				<View style={styles.averageIncomeContainer}>
-					<Text h2 style={{ color: '#3594d4' }}>Today: {todayTotal}</Text>
-				</View>
+					<Text h4 style={styles.newGigTitle}>ADD NEW GIG</Text>
+					<Input 
+						style={styles.input}
+						value={description}
+						placeholder="Enter a description"
+						onChangeText={text => setDescription(text)}
+					/>
+					<Input 
+						style={styles.input}
+						value={amount}
+						keyboardType='numeric'
+						placeholder="Enter amount"
+						onChangeText={text => setAmount(text)}
+						onSubmitEditing={addGig}
+					/>
 
-				<Text h4 style={styles.newGigTitle}>ADD NEW GIG</Text>
-				<Input 
-					style={styles.input}
-					value={description}
-					placeholder="Enter a description"
-					onChangeText={text => setDescription(text)}
-				/>
-				<Input 
-					style={styles.input}
-					value={amount}
-					keyboardType='numeric'
-					placeholder="Enter amount"
-					onChangeText={text => setAmount(text)}
-					onSubmitEditing={addGig}
-				/>
-
-				<View style={styles.btnContainer}>
-					<Button containerStyle={styles.button} disabled={description == "" || amount == ""} title="Add GIG" onPress={addGig} />
+					<View style={styles.btnContainer}>
+						<Button containerStyle={styles.button} disabled={description == "" || amount == ""} title="Add GIG" onPress={addGig} />
+					</View>
 				</View>
-			</View>
+			</ScrollView>
 		</SafeAreaView>
 	)
 }

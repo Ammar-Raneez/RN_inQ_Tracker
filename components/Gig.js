@@ -1,9 +1,9 @@
 import React from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 
-const Gig = ({ key, date, description, amount}) => {
+const Gig = ({ date, description, amount}) => {
     return (
-        <View style={styles.container} key={key}>
+        <View style={styles.container}>
             <Text style={styles.description}>{description.toUpperCase()}</Text>
 
             <View style={styles.innerRightContainer}>
